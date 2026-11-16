@@ -1,0 +1,25 @@
+{
+  "name": "Family Feud Host Board",
+  "short_name": "Family Feud",
+  "description": "Offline Family Feud score, answers and strikes board",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#10141d",
+  "theme_color": "#151923",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

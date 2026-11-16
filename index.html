@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#151923">
+  <meta name="description" content="Offline Family Feud host board">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png">
+  <title>Family Feud Host Board</title>
+  <style>
+    :root{color-scheme:dark;--bg:#10141d;--panel:#1b2230;--panel2:#242d3d;--line:#344054;--muted:#aab5c5;--red:#c52e3b;--blue:#2864c7;--gold:#f5c451}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f7f8fb;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom)}
+    main{max-width:760px;margin:0 auto;padding:16px 0 28px}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+    h1{font-size:1.35rem;margin:0}h2{font-size:1.2rem;margin:0}.sub{color:var(--muted);font-size:.82rem}
+    .scores{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.score{border-radius:14px;padding:14px}.score.red{background:var(--red)}.score.blue{background:var(--blue)}
+    .score strong{display:block;font-size:2rem;line-height:1.15;font-variant-numeric:tabular-nums}.score span{font-weight:700;font-size:.9rem}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0}
+    .qhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}.pill{font-size:.78rem;color:#16202d;background:var(--gold);border-radius:30px;padding:5px 9px;font-weight:800;white-space:nowrap}
+    .answer{border:1px solid var(--line);border-radius:12px;padding:10px;margin:9px 0;background:var(--panel2)}
+    .answerline{display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:650}.pts{font-size:1.2rem;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+    button{font:inherit;font-weight:700;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#303b4d;color:#fff;cursor:pointer;touch-action:manipulation}
+    button:active{transform:scale(.98)}button:disabled{opacity:.35;cursor:default}.actions .redbtn{background:#61252d;border-color:#a33a46}.actions .bluebtn{background:#203f73;border-color:#356ec2}
+    .assigned{outline:2px solid var(--gold);outline-offset:1px}.strikes{display:grid;grid-template-columns:1fr 1fr;gap:10px}.strikebox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+    .strikebuttons{display:flex;gap:7px;margin:9px 0}.strikebuttons button{flex:1;min-height:48px;font-size:1.25rem}.strikebuttons .on{background:#a92331;border-color:#ef6872}.strikebuttons .off{background:#303b4d}
+    .nav{display:flex;justify-content:space-between;gap:10px;margin:14px 0}.nav button{flex:1;padding:13px}.primary{background:#d4a62e;color:#1b1b1b;border-color:#f0c75d}
+    .danger{background:transparent;border-color:#a33a46;color:#ff9da5;width:100%;margin-top:8px}
+    .status{font-size:.8rem;color:var(--muted);text-align:center;margin:12px 0}.install{display:none}.install.show{display:inline-block}
+    @media(min-width:600px){main{padding-top:24px}.panel{padding:18px}.answer{padding:12px}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div><h1>Family Feud</h1><div class="sub">Host's game board · works offline</div></div>
+    <button id="installBtn" class="install">Install app</button>
+  </div>
+  <section class="scores">
+    <div class="score red"><span>RED TEAM</span><strong id="redScore">0</strong><small>Total points</small></div>
+    <div class="score blue"><span>BLUE TEAM</span><strong id="blueScore">0</strong><small>Total points</small></div>
+  </section>
+  <section class="panel">
+    <div class="qhead"><strong id="qCount">Question 1 / 9</strong><span class="pill">HOST VIEW</span></div>
+    <h2 id="question"></h2>
+    <div id="answers"></div>
+  </section>
+  <h2 style="margin:18px 2px 10px">Team strikes</h2>
+  <section class="strikes">
+    <div class="strikebox"><strong>Red Team</strong><div id="redStrikes" class="strikebuttons"></div><div class="sub" id="redStrikeCount">0 / 3 strikes</div></div>
+    <div class="strikebox"><strong>Blue Team</strong><div id="blueStrikes" class="strikebuttons"></div><div class="sub" id="blueStrikeCount">0 / 3 strikes</div></div>
+  </section>
+  <div class="nav"><button id="prev">← Previous</button><button id="next" class="primary">Next →</button></div>
+  <div class="status" id="saveStatus">Progress saves automatically on this device.</div>
+  <button id="reset" class="danger">Reset entire game</button>
+</main>
+<script>
+const cards = [
+ {q:"Name something young people do to relax.",a:[["Listen to music",30],["Use social media",25],["Play video games",18],["Sleep",15],["Play sports",7],["Read a book",5]]},
+ {q:"Name something people often forget when leaving home.",a:[["Phone",30],["Keys",25],["Wallet",18],["Water bottle",12],["ID card",10],["Umbrella",5]]},
+ {q:"What food is usually cut into triangles?",a:[["Pizza",45],["Sandwich",25],["Toast",12],["Quesadilla",10],["Cake",5],["Pie",3]]},
+ {q:"What is something people put under their beds?",a:[["Shoes",30],["Storage boxes",25],["Dust",18],["Clothes",12],["Toys",10],["Suitcases",5]]},
+ {q:"What accessory could fall off someone's outfit while dancing?",a:[["Hat",30],["Glasses",25],["Necklace",18],["Earrings",12],["Bracelet",10],["Watch",5]]},
+ {q:"What would someone who scored in the wrong goal do?",a:[["Pretend nothing happened",30],["Blame someone else",25],["Laugh",18],["Apologise",12],["Celebrate by accident",10],["Stand there confused",5]]},
+ {q:"Name something people do when they think nobody is watching.",a:[["Dance",30],["Sing",25],["Talk to themselves",18],["Pick their nose",12],["Make funny faces",10],["Practise conversations",5]]},
+ {q:"Name something that would be embarrassing to drop in public.",a:[["Phone",30],["Food",25],["Money",15],["Books",12],["Shopping bags",10],["School bag",8]]},
+ {q:"Name something people do when they are bored in class.",a:[["Use their phone",35],["Daydream",20],["Draw on paper",15],["Talk to friends",12],["Play with a pen",10],["Look at the clock",8]]}
+];
+const KEY="family-feud-host-board-v1";
+const blank=()=>({question:0,assigned:{},strikes:{red:[],blue:[]}});
+let state=load();
+function load(){try{return {...blank(),...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch{return blank()}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));document.getElementById("saveStatus").textContent="Saved on this device · "+new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}
+function score(team){return cards.reduce((sum,c,q)=>sum+c.a.reduce((s,a,i)=>s+(state.assigned[q+"-"+i]===team?a[1]:0),0),0)}
+function render(){
+ const q=state.question,c=cards[q];document.getElementById("qCount").textContent=`Question ${q+1} / ${cards.length}`;
+ document.getElementById("question").textContent=c.q;document.getElementById("redScore").textContent=score("red");document.getElementById("blueScore").textContent=score("blue");
+ const answers=document.getElementById("answers");answers.replaceChildren();
+ c.a.forEach(([name,points],i)=>{const key=q+"-"+i,who=state.assigned[key],box=document.createElement("div");box.className="answer";
+ const line=document.createElement("div");line.className="answerline";const label=document.createElement("span");label.textContent=(i+1)+". "+name;const pts=document.createElement("span");pts.className="pts";pts.textContent=points;line.append(label,pts);box.append(line);
+ const actions=document.createElement("div");actions.className="actions";
+ [["red","Red"],["blue","Blue"]].forEach(([team,title])=>{const b=document.createElement("button");b.textContent=title;b.className=(team==="red"?"redbtn":"bluebtn")+(who===team?" assigned":"");b.setAttribute("aria-pressed",who===team?"true":"false");b.onclick=()=>{if(who===team)delete state.assigned[key];else state.assigned[key]=team;save();render()};actions.append(b)});
+ const clear=document.createElement("button");clear.textContent="Clear assignment";clear.style.gridColumn="1 / -1";clear.disabled=!who;clear.onclick=()=>{delete state.assigned[key];save();render()};actions.append(clear);box.append(actions);answers.append(box)});
+ ["red","blue"].forEach(team=>{const el=document.getElementById(team+"Strikes");el.replaceChildren();for(let i=0;i<3;i++){const b=document.createElement("button"),on=state.strikes[team].includes(i);b.textContent=on?"✕":"＋";b.className=on?"on":"off";b.setAttribute("aria-label",`${on?"Remove":"Add"} ${team} strike ${i+1}`);b.setAttribute("aria-pressed",on?"true":"false");b.onclick=()=>{const arr=state.strikes[team];state.strikes[team]=arr.includes(i)?arr.filter(x=>x!==i):[...arr,i];save();render()};el.append(b)}document.getElementById(team+"StrikeCount").textContent=state.strikes[team].length+" / 3 strikes"});
+ document.getElementById("prev").disabled=q===0;document.getElementById("next").disabled=q===cards.length-1;
+}
+function go(n){state.question=Math.max(0,Math.min(cards.length-1,n));state.strikes={red:[],blue:[]};save();render()}
+document.getElementById("prev").onclick=()=>go(state.question-1);document.getElementById("next").onclick=()=>go(state.question+1);
+document.getElementById("reset").onclick=()=>{if(confirm("Reset all scores, answer assignments and strikes?")){state=blank();save();render()}};
+render();
+let installPrompt;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installPrompt=e;const b=document.getElementById("installBtn");b.classList.add("show");b.onclick=async()=>{installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;b.classList.remove("show")}});
+if("serviceWorker" in navigator && location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
+</script>
+</body></html>
